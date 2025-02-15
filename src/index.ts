@@ -1,9 +1,8 @@
 import "dotenv/config";
 import * as sdk from "matrix-js-sdk";
 import { RoomEvent, ClientEvent } from "matrix-js-sdk";
-import handleMessage from "./messages";
+import { handleMessage, handleRoomHistory } from "./messages";
 import handleReaction from "./reactions";
-
 const { homeserver, access_token, userId, whatsAppRoomId } = process.env;
 
 const client = sdk.createClient({
@@ -21,23 +20,33 @@ const start = async () => {
   });
 
   const scriptStart = Date.now();
+  let roomText = "";
 
   client.on(
     RoomEvent.Timeline,
     async function (event, room, toStartOfTimeline) {
       const eventTime = event.event.origin_server_ts;
 
-      if (scriptStart > eventTime) {
-        return; //don't run commands for old messages
-      }
-
-      if (event.event.sender === userId) {
-        return; // don't reply to messages sent by the tool
-      }
-
       if (event.event.room_id !== whatsAppRoomId) {
         return; // don't activate unless in the active room
       }
+
+      // collect all messages in the room
+      if (scriptStart > eventTime) {
+        if (event.getType() === "m.room.message") {
+          roomText += `${event.event.sender}: ${event.event.content.body}\n`;
+        }
+        return; //don't run commands for old messages
+      } else {
+        if (roomText.length > 0) {
+          handleRoomHistory(roomText);
+          roomText = "";
+        }
+      }
+
+      // if (event.event.sender === userId) {
+      //   return; // don't reply to messages sent by the tool
+      // }
 
       if (
         event.getType() !== "m.room.message" &&
@@ -55,3 +64,4 @@ const start = async () => {
 };
 
 start();
+

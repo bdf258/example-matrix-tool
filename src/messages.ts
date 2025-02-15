@@ -82,7 +82,7 @@ const handleReply = async (event) => {
   }
 };
 
-const handleMessage = async (event) => {
+export const handleMessage = async (event) => {
   const message = event.event.content.body.toLowerCase();
   const { room_id } = event.event;
 
@@ -99,4 +99,7 @@ const handleMessage = async (event) => {
   }
 };
 
-export default handleMessage;
+export const handleRoomHistory = async (roomText: string) => {
+  console.log("Past chat log:", roomText);
+};
+
