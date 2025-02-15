@@ -1,0 +1,5 @@
+example_data_sample.txt
+example_data.txt
+/dist
+/node_modules
+.env
