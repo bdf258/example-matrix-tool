@@ -1,18 +1,16 @@
 ---
-description: Summary of the discussions from the 15th to the 21st of January
+description: Summary of the discussions from the 20-26th of January
 ---
 
-# 15th January
+# 20th January
 
-* \[Thursday afternoon] Announcement of EA Tech London meetup featuring FrontierMath talk by David Owen from Epoch AI, discussing AI progress and reasoning models.
-  * https://lu.ma/asus2jfi
-* \[Friday night] Sharing of EU citizen initiative for psychedelic therapy legalization, leading to brief discussion about Brexit's impact on participation.
-  * https://eci.ec.europa.eu/050/public/#/screen/home
-* \[Saturday midday] Request for recommendations for communication coaching in London office setting, resulting in multiple resource suggestions.
-  * https://www.joshua-becker.com/workshop-materials
-* \[Sunday morning] Discussion about cost-effectiveness modeling and wellbeing evaluation courses, with several recommendations for programs and resources.
+* \[Monday morning] Discussion of recommendations for courses in cost-effectiveness modelling and program evaluation, with suggestions including AIM Research and MIT MicroMasters
   * https://www.aimresearchprogram.com/
   * https://micromasters.mit.edu/dedp/
-* \[Monday afternoon] Job posting for Project Manager position at Impactic social enterprise.
-  * https://www.linkedin.com/posts/molly-bevan\_big-news-were-growing-the-impactic-team-activity-7287415400441495552-hBly
-
+* \[Sunday evening] Debate about AI energy consumption vs other environmental risks, discussing relative impact compared to crypto mining and future scaling concerns
+  * https://www.lesswrong.com/posts/Kobbt3nQgv3yn29pr/my-motivation-and-theory-of-change-for-working-in-ai
+  * https://andymasley.substack.com/p/individual-ai-use-is-not-bad-for
+* \[Sunday late] EU citizen initiative for legalizing psychedelic therapy shared, with discussion of Brexit impact on UK citizen participation
+  * https://eci.ec.europa.eu/050/public/#/screen/home
+* \[Monday afternoon] Request for communication coaching recommendations in London office, with responses including free workshop materials
+  * https://www.joshua-becker.com/workshop-materials
