@@ -123,8 +123,8 @@ export const handleRoomHistory = async (roomText: string) => {
     if (message.content) {
       await sendMessage(
         process.env.whatsAppRoomId!,
-        `📝 Chat Summary:\n${JSON.stringify(message.content)}`
-      );
+        `📝 Chat Summary:\n${(message.content[0] as any).text}`
+    );
     }
 
   } catch (error) {
