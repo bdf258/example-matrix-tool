@@ -122,7 +122,7 @@ For each important thread, include:
 Order the threads by engagement level (most engaged first). Include only the 4-8 most significant threads. If there are no significant threads, please include 5 summaries.
 
 Format each thread as:
-* [DD/MM/YYYY, HH:MM] Thread description
+* [day of the week, morning/afternoon/evening/night] Thread description
   * Link 1
   * Link 2
 
@@ -135,7 +135,10 @@ Keep descriptions concise but informative, capturing:
 - Any action items or next steps
 
 Please format the output in a bullet point list with sub-bullets for links. Use markdown links for the links.
-If there are no significant threads, just return "No significant threads found" and nothing else.`;
+If there are no significant threads, just return "No significant threads found" and nothing else.
+Only include the specified output - no other notes.
+
+`;
 
 export const handleRoomHistory = async (roomText: string) => {
   try {
