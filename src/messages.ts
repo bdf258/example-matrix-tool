@@ -119,12 +119,14 @@ For each important thread, include:
 - A 15-25 word description capturing the core topic and any key debates/outcomes
 - Any relevant links shared, as indented sub-bullets
 
-Order the threads by engagement level (most engaged first). Include only the 4-8 most significant threads.
+Order the threads by engagement level (most engaged first). Include only the 4-8 most significant threads. If there are no significant threads, please include 5 summaries.
 
 Format each thread as:
 * [DD/MM/YYYY, HH:MM] Thread description
   * Link 1
   * Link 2
+
+Format the links in markdown with a title and the url.
 
 Keep descriptions concise but informative, capturing:
 - The main topic/question
