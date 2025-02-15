@@ -132,7 +132,8 @@ Keep descriptions concise but informative, capturing:
 - Any resolution or outcome
 - Any action items or next steps
 
-Please format the output as a bullet point list with sub-bullets for links.`;
+Please format the output as a bullet point list with sub-bullets for links.
+If there are no significant threads, just return "No significant threads found" and nothing else.`;
 
 export const handleRoomHistory = async (roomText: string) => {
   try {
