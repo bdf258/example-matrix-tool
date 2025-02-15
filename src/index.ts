@@ -3,7 +3,7 @@ import * as sdk from "matrix-js-sdk";
 import { RoomEvent, ClientEvent } from "matrix-js-sdk";
 import { handleMessage, handleRoomHistory } from "./messages";
 import handleReaction from "./reactions";
-const { homeserver, access_token, userId, whatsAppRoomId } = process.env;
+const { homeserver, access_token, userId, whatsAppRoomId, HANDLE_ROOM_RECENT_HISTORY, HANDLE_ROOM_PAST_HISTORY, HANDLE_FAKE_HISTORY, HANDLE_EXAMPLE_BOT } = process.env;
 
 const client = sdk.createClient({
   baseUrl: homeserver,
@@ -14,15 +14,43 @@ const client = sdk.createClient({
 const start = async () => {
   await client.startClient();
 
+  // Experiment with getting room history without events
+  if(HANDLE_ROOM_RECENT_HISTORY){
+    const room = client.getRoom(whatsAppRoomId);
+    
+    if (room) {
+        const timeline = room.getLiveTimeline();
+
+        console.log("TIMELINE:", timeline);
+
+        client.paginateEventTimeline(timeline, { backwards: true, limit: 10 })
+            .then((moreMessages) => {
+                if (moreMessages) {
+                    const events = timeline.getEvents();
+                    events.forEach(event => {
+                        if (event.getType() === "m.room.message") {
+                            console.log(`Message: ${event.getContent().body}`);
+                        }
+                    });
+                }
+            })
+            .catch((err) => console.error("Failed to fetch history:", err));
+      }
+      await client.stopClient();
+      return;
+  }
+
   let roomText = "";
 
   client.once(ClientEvent.Sync, async (state, prevState, res) => {
     // state will be 'PREPARED' when the client is ready to use
     console.log(state);
 
-    if (state === "PREPARED") {
-      handleRoomHistory(roomText);
-      roomText = "";
+    if (HANDLE_ROOM_PAST_HISTORY) {
+      if (state === "PREPARED") {
+        handleRoomHistory(roomText);
+        roomText = "";
+      }
     }
   });
 
@@ -39,7 +67,7 @@ const start = async () => {
 
       // collect all messages in the room
       if (scriptStart > eventTime) {
-        if (event.getType() === "m.room.message") {
+        if (HANDLE_ROOM_PAST_HISTORY && event.getType() === "m.room.message") {
           roomText += `${event.event.sender}: ${event.event.content.body}\n`;
         }
         return; //don't run commands for old messages
@@ -64,5 +92,14 @@ const start = async () => {
   );
 };
 
-start();
+if (HANDLE_FAKE_HISTORY) {
+  let roomText = "";
+  roomText += "Tim: Hi, can anyone help me find a good restaurant in the area?\n";
+  roomText += "John: I'm not sure about that, but I know a great place for sushi.\n";
+  roomText += "Jane: I've heard about this new pizza place that's really good.\n";
+  roomText += "Tim: Thanks for the suggestions!\n";
+  handleRoomHistory(roomText);
+}else{
+  start();
+}
 
