@@ -14,13 +14,19 @@ const client = sdk.createClient({
 const start = async () => {
   await client.startClient();
 
+  let roomText = "";
+
   client.once(ClientEvent.Sync, async (state, prevState, res) => {
     // state will be 'PREPARED' when the client is ready to use
     console.log(state);
+
+    if (state === "PREPARED") {
+      handleRoomHistory(roomText);
+      roomText = "";
+    }
   });
 
   const scriptStart = Date.now();
-  let roomText = "";
 
   client.on(
     RoomEvent.Timeline,
@@ -37,11 +43,6 @@ const start = async () => {
           roomText += `${event.event.sender}: ${event.event.content.body}\n`;
         }
         return; //don't run commands for old messages
-      } else {
-        if (roomText.length > 0) {
-          handleRoomHistory(roomText);
-          roomText = "";
-        }
       }
 
       // if (event.event.sender === userId) {
