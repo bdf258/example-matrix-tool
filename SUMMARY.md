@@ -1,4 +1,4 @@
 # Table of contents
 
 * [20th January](README.md)
-* [27t January](27t-january.md)
+* [27th January](27th-january.md)
