@@ -3,6 +3,8 @@ import { sendMessage, getEvent } from "./matrixClientRequests";
 import { PERSON_NAME, ROLE_NAME, PSEUDO_STATE_EVENT_TYPE } from "./constants";
 import { getPseudoState, setPseudoState } from "./pseudoState";
 import Anthropic from "@anthropic-ai/sdk";
+import { execSync } from "child_process";
+const { SEND_TO_CONSOLE, SEND_TO_MATRIX, SEND_TO_GIT, SKIP_CLAUDE } = process.env;
 
 const { userId, CLAUDE_API_KEY } = process.env;
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
@@ -105,16 +107,7 @@ const client_anthropic = new Anthropic({
   apiKey: CLAUDE_API_KEY!, // This is the default and can be omitted
 });
 
-
-export const handleRoomHistory = async (roomText: string) => {
-  try {
-    console.log("Processing chat history...");
-
-    const message = await client_anthropic.messages.create({
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `You will analyze a set of WhatsApp chat messages and create a high-level summary of the most important discussion threads from the past month. Judge importance by:
+const CLAUDE_SUMMARY_PROMPT = `You will analyze a set of WhatsApp chat messages and create a high-level summary of the most important discussion threads from the past month. Judge importance by:
 1. Number of messages in the thread
 2. Number of different participants engaging
 3. Duration of the conversation thread
@@ -139,17 +132,74 @@ Keep descriptions concise but informative, capturing:
 - Any resolution or outcome
 - Any action items or next steps
 
-Please format the output as a bullet point list with sub-bullets for links. \n\n${roomText}`
-      }],
-      model: 'claude-3-5-sonnet-latest',
-    });
+Please format the output as a bullet point list with sub-bullets for links.`;
+
+export const handleRoomHistory = async (roomText: string) => {
+  try {
+    console.log("Processing chat history...");
+
+    let message;
+    if (SKIP_CLAUDE == "true") {
+      message = {
+        content: [{
+          text: "Claude is disabled, set SKIP_CLAUDE=false to get summaries."
+        }]
+      }
+    }else{
+       message = await client_anthropic.messages.create({
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `${CLAUDE_SUMMARY_PROMPT}\n\n${roomText}`
+        }],
+        model: 'claude-3-5-sonnet-latest',
+      });
+    }
 
     // Send the summary back to the Matrix room
     if (message.content) {
-      await sendMessage(
-        process.env.whatsAppRoomId!,
-        `📝 Chat Summary:\n${(message.content[0] as any).text}`
-    );
+      const messageText = (message.content[0] as any).text;
+      if (SEND_TO_CONSOLE == "true") {
+        console.log(`📝 Chat Summary:\n${messageText}`);
+      }
+      if (SEND_TO_MATRIX == "true") {
+        await sendMessage(
+          process.env.whatsAppRoomId!,
+          `📝 Chat Summary:\n${(message.content[0] as any).text}`
+        );
+      }
+      if (SEND_TO_GIT == "true") {
+        const fs = require('fs');
+        const path = require('path');
+
+        // Create a new file with the current date and time
+        const date = new Date();
+        const formattedDate = date.toISOString().split('T')[0];
+
+        const summaryDir = path.join(__dirname, '..', 'summaries');
+
+        console.log("Pulling latest summaries...");
+        execSync('git pull', {cwd: summaryDir});
+
+        const filePath = path.join(summaryDir, `${formattedDate}.md`);
+
+
+        if (fs.existsSync(filePath)) {
+          console.log("Summaries already exist for this date, deleting it...");
+          execSync('git rm ' + filePath, {cwd: summaryDir});
+        }
+
+        fs.writeFileSync(filePath, messageText);
+
+        console.log(`📝 Chat Summary saved to ${filePath}`);
+
+        console.log("Adding and committing summaries...");
+        execSync('git add ' + filePath, {cwd: summaryDir});
+        execSync('git commit -m "Add chat summary for ' + formattedDate + '"', {cwd: summaryDir});
+        console.log("Pushing summaries to remote...");
+        execSync('git push', {cwd: summaryDir});
+        
+      }
     }
 
   } catch (error) {

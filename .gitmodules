@@ -1,0 +1,4 @@
+[submodule "summaries"]
+	path = summaries
+	url = https://github.com/bdf258/example-matrix-tool.git
+	branch = summaries
