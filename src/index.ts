@@ -98,6 +98,10 @@ if(HANDLE_ROOM_PAST_HISTORY == "true"){
   roomText += "John: I'm not sure about that, but I know a great place for sushi.\n";
   roomText += "Jane: I've heard about this new pizza place that's really good.\n";
   roomText += "Tim: Thanks for the suggestions!\n";
+  const fs = require('fs');
+  const path = require('path');
+  const filePath = path.join(__dirname, '..', 'example_data_sample.txt');
+  roomText = fs.readFileSync(filePath, 'utf8')
   handleRoomHistory(roomText);
 }else{
   start();
