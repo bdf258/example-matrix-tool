@@ -184,21 +184,40 @@ export const handleRoomHistory = async (roomText: string) => {
         console.log("Pulling latest summaries...");
         execSync('git pull', {cwd: summaryDir});
 
-        const filePath = path.join(summaryDir, `${formattedDate}.md`);
+        const fileName = formattedDate + ".md";
+        const filePath = path.join(summaryDir, fileName);
 
-
+        // Write the new file
         if (fs.existsSync(filePath)) {
           console.log("Summaries already exist for this date, deleting it...");
           execSync('git rm ' + filePath, {cwd: summaryDir});
         }
-
         fs.writeFileSync(filePath, messageText);
+        console.log(`Chat Summary saved to ${filePath}`);
 
-        console.log(`📝 Chat Summary saved to ${filePath}`);
+        // Update SUMMARY.md
+        const summaryFile = path.join(summaryDir, 'SUMMARY.md');
+        let summaryContent = fs.readFileSync(summaryFile, 'utf8');
+        
+        // Ensure content ends with newline
+        if (!summaryContent.endsWith('\n')) {
+          summaryContent += '\n';
+        }
+        
+        const newSummaryLine = `* [${formattedDate}](${fileName})\n`;
+        
+        if (!summaryContent.includes(newSummaryLine)) {
+          summaryContent += newSummaryLine;
+          fs.writeFileSync(summaryFile, summaryContent);
+          console.log(`Updated summary ${summaryFile}`);
+        } else {
+          console.log(`Summary already contains entry for ${formattedDate}`);
+        }
 
+        // Update git
         console.log("Adding and committing summaries...");
         execSync('git add ' + filePath, {cwd: summaryDir});
-        execSync('git commit -m "Add chat summary for ' + formattedDate + '"', {cwd: summaryDir});
+        execSync('git commit -am "Add chat summary for ' + formattedDate + '"', {cwd: summaryDir});
         console.log("Pushing summaries to remote...");
         execSync('git push', {cwd: summaryDir});
         
