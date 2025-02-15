@@ -2,8 +2,10 @@ import { v4 as uuidv4 } from "uuid";
 import { sendMessage, getEvent } from "./matrixClientRequests";
 import { PERSON_NAME, ROLE_NAME, PSEUDO_STATE_EVENT_TYPE } from "./constants";
 import { getPseudoState, setPseudoState } from "./pseudoState";
+import Anthropic from "@anthropic-ai/sdk";
 
-const { userId } = process.env;
+const { userId, CLAUDE_API_KEY } = process.env;
+const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 
 const hello = async (roomId: string) => {
   sendMessage(
@@ -99,7 +101,46 @@ export const handleMessage = async (event) => {
   }
 };
 
-export const handleRoomHistory = async (roomText: string) => {
-  console.log("Past chat log:", roomText);
-};
+const client_anthropic = new Anthropic({
+  apiKey: CLAUDE_API_KEY!, // This is the default and can be omitted
+});
 
+
+export const handleRoomHistory = async (roomText: string) => {
+  try {
+    console.log("Processing chat history...");
+
+    const message = await client_anthropic.messages.create({
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `Please provide a concise summary of this chat conversation: \n\n${roomText}`
+      }],
+      model: 'claude-3-5-sonnet-latest',
+    });
+
+    // Send the summary back to the Matrix room
+    if (message.content) {
+      await sendMessage(
+        process.env.whatsAppRoomId!,
+        `📝 Chat Summary:\n${JSON.stringify(message.content)}`
+      );
+    }
+
+  } catch (error) {
+    console.error('Error in handleRoomHistory:', error);
+    
+    if (error instanceof Anthropic.APIError) {
+      console.log('API Error details:', {
+        status: error.status,
+        name: error.name,
+        message: error.message
+      });
+    }
+    
+    await sendMessage(
+      process.env.whatsAppRoomId!,
+      "❌ Sorry, I encountered an error while generating the chat summary."
+    );
+  }
+};
