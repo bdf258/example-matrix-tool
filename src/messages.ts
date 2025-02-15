@@ -114,7 +114,31 @@ export const handleRoomHistory = async (roomText: string) => {
       max_tokens: 1000,
       messages: [{
         role: 'user',
-        content: `Please provide a concise summary of this chat conversation: \n\n${roomText}`
+        content: `You will analyze a set of WhatsApp chat messages and create a high-level summary of the most important discussion threads from the past month. Judge importance by:
+1. Number of messages in the thread
+2. Number of different participants engaging
+3. Duration of the conversation thread
+4. Whether resources/links were shared
+
+For each important thread, include:
+- The timestamp of the first message in that thread
+- A 15-25 word description capturing the core topic and any key debates/outcomes
+- Any relevant links shared, as indented sub-bullets
+
+Order the threads by engagement level (most engaged first). Include only the 4-8 most significant threads.
+
+Format each thread as:
+* [DD/MM/YYYY, HH:MM] Thread description
+  * Link 1
+  * Link 2
+
+Keep descriptions concise but informative, capturing:
+- The main topic/question
+- Key points of disagreement (if applicable) 
+- Any resolution or outcome
+- Any action items or next steps
+
+Please format the output as a bullet point list with sub-bullets for links. \n\n${roomText}`
       }],
       model: 'claude-3-5-sonnet-latest',
     });
