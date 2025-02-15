@@ -119,6 +119,7 @@ export const handleRoomHistory = async (roomText: string) => {
 2. Number of different participants engaging
 3. Duration of the conversation thread
 4. Whether resources/links were shared
+5. Whether any personally sensitive information was shared, in which case you will NOT include this in the summary.
 
 For each important thread, include:
 - The timestamp of the first message in that thread
