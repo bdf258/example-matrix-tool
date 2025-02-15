@@ -1,9 +1,17 @@
 import "dotenv/config";
 import * as sdk from "matrix-js-sdk";
-import { RoomEvent, ClientEvent } from "matrix-js-sdk";
+import { RoomEvent, ClientEvent, MatrixEvent } from "matrix-js-sdk";
 import { handleMessage, handleRoomHistory } from "./messages";
 import handleReaction from "./reactions";
+import { getRoomEvents } from "./matrixClientRequests";
 const { homeserver, access_token, userId, whatsAppRoomId, HANDLE_ROOM_RECENT_HISTORY, HANDLE_ROOM_PAST_HISTORY, HANDLE_FAKE_HISTORY, HANDLE_EXAMPLE_BOT } = process.env;
+
+const roomEventToText = (event) => {
+  if (event.type === "m.room.message") {
+    return `${event.sender}: ${event.content.body}\n`;
+  }
+  return "";
+}
 
 const client = sdk.createClient({
   baseUrl: homeserver,
@@ -14,39 +22,13 @@ const client = sdk.createClient({
 const start = async () => {
   await client.startClient();
 
-  // Experiment with getting room history without events
-  if(HANDLE_ROOM_RECENT_HISTORY){
-    const room = client.getRoom(whatsAppRoomId);
-    
-    if (room) {
-        const timeline = room.getLiveTimeline();
-
-        console.log("TIMELINE:", timeline);
-
-        client.paginateEventTimeline(timeline, { backwards: true, limit: 10 })
-            .then((moreMessages) => {
-                if (moreMessages) {
-                    const events = timeline.getEvents();
-                    events.forEach(event => {
-                        if (event.getType() === "m.room.message") {
-                            console.log(`Message: ${event.getContent().body}`);
-                        }
-                    });
-                }
-            })
-            .catch((err) => console.error("Failed to fetch history:", err));
-      }
-      await client.stopClient();
-      return;
-  }
-
   let roomText = "";
 
   client.once(ClientEvent.Sync, async (state, prevState, res) => {
     // state will be 'PREPARED' when the client is ready to use
     console.log(state);
 
-    if (HANDLE_ROOM_PAST_HISTORY) {
+    if (HANDLE_ROOM_PAST_HISTORY == "true") {
       if (state === "PREPARED") {
         handleRoomHistory(roomText);
         roomText = "";
@@ -67,7 +49,7 @@ const start = async () => {
 
       // collect all messages in the room
       if (scriptStart > eventTime) {
-        if (HANDLE_ROOM_PAST_HISTORY && event.getType() === "m.room.message") {
+        if (HANDLE_ROOM_PAST_HISTORY == "true" && event.getType() === "m.room.message") {
           roomText += `${event.event.sender}: ${event.event.content.body}\n`;
         }
         return; //don't run commands for old messages
@@ -92,7 +74,25 @@ const start = async () => {
   );
 };
 
-if (HANDLE_FAKE_HISTORY) {
+const doPastHistory = async () => {
+  // Experiment with getting room history without subscribing to events
+  const roomEventsResponse = await getRoomEvents(whatsAppRoomId);
+  const body = await roomEventsResponse.json();
+  const { chunk } = (body as any);
+  
+  console.log("ROOM EVENTS:", chunk)
+  let roomText = "";
+  chunk.forEach(event => {
+    if (event.type === "m.room.message") {
+      roomText += `${event.sender}: ${event.content.body}\n`;
+    }
+  });
+  handleRoomHistory(roomText);
+}
+
+if(HANDLE_ROOM_PAST_HISTORY == "true"){
+  doPastHistory();
+} else if (HANDLE_FAKE_HISTORY == "true") {
   let roomText = "";
   roomText += "Tim: Hi, can anyone help me find a good restaurant in the area?\n";
   roomText += "John: I'm not sure about that, but I know a great place for sushi.\n";

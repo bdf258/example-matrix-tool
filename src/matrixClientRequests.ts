@@ -37,7 +37,7 @@ export const getEvent = async (roomId: string, eventId: string) => {
 
 export const getRoomEvents = (roomId: string) => {
   return fetch(
-    `${homeserver}/_matrix/client/v3/rooms/${roomId}/messages?limit=10000&dir=b`,
+    `${homeserver}/_matrix/client/v3/rooms/${roomId}/messages?limit=10000&dir=f`,
     {
       headers: {
         "Content-Type": "application/json",
